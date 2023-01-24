@@ -7,23 +7,27 @@ const renderer = new THREE.WebGLRenderer();
 const controls = new OrbitControls(camera, renderer.domElement);
 
 renderer.setSize( window.innerWidth, window.innerHeight );
-// renderer.SetClearColor(0xffffff, 0)
 document.body.appendChild( renderer.domElement );
 
 const light = new THREE.AmbientLight(0xffffff);
 scene.add(light);
 light.position.y = 10;
 
-var geometry = new THREE.SphereGeometry(7);
+var geometry = new THREE.SphereGeometry(1);
 var texture = new THREE.TextureLoader().load("/images/gofman.jpg");
 const material = new THREE.MeshStandardMaterial( { map: texture } );
-const cube1 = new THREE.Mesh( geometry, material );
-scene.add( cube1 );
 
-geometry = new THREE.SphereGeometry(1);
-const cube2 = new THREE.Mesh( geometry, material );
-scene.add( cube2 );
-cube2.position.x = 256;
+function Planet(m) {
+	this.mass = m;
+	this.mesh = new THREE.Mesh(geometry, material);
+}
+
+var planet1 = new Planet(10); 
+scene.add(planet1.mesh);
+
+var planet2 = new Planet(30)
+scene.add(planet2.mesh);
+planet2.mesh.position.x = 256;
 
 camera.position.z = 10;
 controls.update();
@@ -43,8 +47,8 @@ function animate() {
 	controls.update();
 	renderer.render( scene, camera );
 	angle += Math.PI * 0.003;
-	cube2.position.x = Math.cos(angle) * 16;
-	cube2.position.z = Math.sin(angle) * 16;
+	planet2.mesh.position.x = Math.cos(angle) * 16;
+	planet2.mesh.position.z = Math.sin(angle) * 16;
 
 }
 animate();
