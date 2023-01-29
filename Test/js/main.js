@@ -2,24 +2,19 @@ import * as THREE from '../modules/three.module.js';
 import {OrbitControls} from '../modules/OrbitControls.js'
 
 const GRAVITY = 6.67 * Math.pow(10, -11);
+let planets = [];
 
-let Earth = {
-    m: 10,
-    x: 0.0,
-    y: 0.0,
-    z: 0.0,
-    vx: 0.0,
-    vy: 0.0,
-    vz: 0.0,
-}
-let Moon = {
-    m: 1,
-    x: 10,
-    y: 0.0,
-    z: 0.0,
-    vx: 0.0,
-    vy: -0.00001,
-    vz: 0.0,
+function Planet(mass, planetmesh){
+	this.m = mass;
+	this.r = 1;
+    this.x = 0.0;
+    this.y = 0.0;
+    this.z = 0.0;
+    this.vx = 0.0;
+    this.vy = 0.0;
+    this.vz = 0.0;
+    this.mesh = planetmesh;
+    scene.add(this.mesh);
 }
 
 function GetA(m, dx, dy, dz) {
@@ -28,56 +23,92 @@ function GetA(m, dx, dy, dz) {
     return acceleration
 }
 
-function SimPhysics(dt){
-	const [dx, dy, dz] = [Moon.x - Earth.x, Moon.y - Earth.y, Moon.z - Earth.z];
-    const AMoon = GetA(Earth.m, dx, dy, dz);
-    const AEarth = GetA(Moon.m, dx, dy, dz);
+function SimPhysics(dt, planet1, planet2){
+	const [dx, dy, dz] = [planet1.x - planet2.x, planet1.y - planet2.y, planet1.z - planet2.z];
+    const A1 = GetA(planet2.m, dx, dy, dz);
+    const A2 = GetA(planet1.m, dx, dy, dz);
 
-   	const [eax, eay, eaz] = [dx * AEarth, dy * AEarth, dz * AEarth];
-   	const [max, may, maz] = [-dx * AMoon, -dy * AMoon, -dz * AMoon];
+   	const [p2ax, p2ay, p2az] = [dx * A2, dy * A2, dz * A2];
+   	const [p1ax, p1ay, p1az] = [-dx * A1, -dy * A1, -dz * A1];
 
-   	Earth.vx += eax * dt;
-	Earth.vy += eay * dt;
-	Earth.vz += eaz * dt;
+   	planet2.vx += p2ax * dt;
+	planet2.vy += p2ay * dt;
+	planet2.vz += p2az * dt;
 
-	Moon.vx += max * dt;
-	Moon.vy += may * dt;
-	Moon.vz += maz * dt;
+	planet1.vx += p1ax * dt;
+	planet1.vy += p1ay * dt;
+	planet1.vz += p1az * dt;
 
-	Earth.x += Earth.vx * dt;
-	Earth.y += Earth.vy * dt;
-	Earth.z += Earth.vz * dt;
 
-	Moon.x += Moon.vx * dt;
-	Moon.y += Moon.vy * dt;
-	Moon.z += Moon.vz * dt;
+	if (planet1.r + planet2.r >= Math.pow(dx*dx + dy*dy + dz*dz, 1.5)){
+		planet2.vx *= -1 / 2;
+		planet2.vy *= -1 / 2;
+		planet2.vz *= -1 / 2;
 
+		planet1.vx *= -1 / 2;
+		planet1.vy *= -1 / 2;
+		planet1.vz *= -1 / 2;
+	}
+
+	planet2.x += planet2.vx * dt;
+	planet2.y += planet2.vy * dt;
+	planet2.z += planet2.vz * dt;
+
+	planet1.x += planet1.vx * dt;
+	planet1.y += planet1.vy * dt;
+	planet1.z += planet1.vz * dt;
 }
 
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-const renderer = new THREE.WebGLRenderer();
-const controls = new OrbitControls(camera, renderer.domElement);
+function MovePlanets(planets){
+	for (let i = 0; i < planets.length - 1; i++){
+		for (let j = i + 1; j < planets.length; j++){
+			SimPhysics(100, planets[i], planets[j])
+		};
+	};
 
+	for (let i = 0; i < planets.length; i++){
+		planets[i].mesh.position.x = planets[i].x;
+		planets[i].mesh.position.y = planets[i].y;
+		planets[i].mesh.position.z = planets[i].z;
+	};
+}
+
+
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+camera.position.z = 20;
+
+const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.update();
 
 const light = new THREE.AmbientLight(0xffffff);
 scene.add(light);
 light.position.y = 10;
 
-var geometry = new THREE.SphereGeometry(1, 10, 10);
+const geometry = new THREE.SphereGeometry(1, 8, 8);
 const material = new THREE.MeshStandardMaterial( { wireframe: true } );
 
-var planet1 = new THREE.Mesh(geometry, material);
-scene.add(planet1);
 
-var planet2 = new THREE.Mesh(geometry, material);
-scene.add(planet2);
-planet2.position.x = 10;
+let earth = new Planet(5000, new THREE.Mesh(geometry, material));
 
-camera.position.z = 100;
-controls.update();
+let moon1 = new Planet(1, new THREE.Mesh(geometry, material));
+moon1.mesh.position.x = 50;
+moon1.x = 50;
+moon1.vx = -0.0001
+
+
+let moon2 = new Planet(1, new THREE.Mesh(geometry, material));
+moon2.mesh.position.x = -10;
+moon2.x = -10;
+
+
+
+planets.push(earth, moon1, moon2)
 
 window.addEventListener("resize", function(){
 	var width = window.innerWidth;
@@ -87,23 +118,12 @@ window.addEventListener("resize", function(){
 	camera.updateProjectionMatrix();
 });
 
-function MovePlanets(){
-	SimPhysics(50000);
-	planet1.position.x = Earth.x;
-	planet1.position.y = Earth.y;
-	planet1.position.z = Earth.z;
-
-	planet2.position.x = Moon.x;
-	planet2.position.y = Moon.y;
-	planet2.position.z = Moon.z;
-
-	controls.target = (new THREE.Vector3(planet1.position.x, planet1.position.y, planet1.position.z));
-}
 
 function animate() {
 	requestAnimationFrame( animate );
 	controls.update();
 	renderer.render( scene, camera );
-	MovePlanets()
+	MovePlanets(planets);
+	// console.log(earth.vx)
 }
 animate();
