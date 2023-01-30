@@ -1,5 +1,6 @@
 import * as THREE from '../modules/three.module.js';
 import {OrbitControls} from '../modules/OrbitControls.js'
+import {CSS2DRenderer, CSS2DObject} from "../modules/CSS2DRenderer.js"
 
 const GRAVITY = 6.67 * Math.pow(10, -11);
 let planets = [];
@@ -83,6 +84,13 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
+const htmlrenderer = new CSS2DRenderer();
+htmlrenderer.setSize(window.innerWidth, window.innerHeight);
+htmlrenderer.domElement.style.position = "absolute";
+htmlrenderer.domElement.style.top = "0px";
+htmlrenderer.domElement.style.pointerEvents = "none";
+document.body.appendChild(htmlrenderer.domElement);
+
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.update();
 
@@ -93,27 +101,32 @@ light.position.y = 10;
 const geometry = new THREE.SphereGeometry(1, 8, 8);
 const material = new THREE.MeshStandardMaterial( { wireframe: true } );
 
+const m = document.getElementById("all_planets")
+m.className = "all_planets"
+const menu = new CSS2DObject(m);
+scene.add(menu);
+
 
 let earth = new Planet(5000, new THREE.Mesh(geometry, material));
 
 let moon1 = new Planet(1, new THREE.Mesh(geometry, material));
 moon1.mesh.position.x = 50;
-moon1.x = 50;
-moon1.vx = -0.0001
+moon1.x = 10;
+moon1.vy = -0.0001
 
 
 let moon2 = new Planet(1, new THREE.Mesh(geometry, material));
 moon2.mesh.position.x = -10;
-moon2.x = -10;
-
-
+moon2.x = -10
+moon2.vx = 0.0001
 
 planets.push(earth, moon1, moon2)
 
 window.addEventListener("resize", function(){
-	var width = window.innerWidth;
-	var height = window.innerHeight;
+	let width = window.innerWidth;
+	let height = window.innerHeight;
 	renderer.setSize(width, height);
+	htmlrenderer.setSize(width, height);
 	camera.aspect = width / height;
 	camera.updateProjectionMatrix();
 });
@@ -123,7 +136,7 @@ function animate() {
 	requestAnimationFrame( animate );
 	controls.update();
 	renderer.render( scene, camera );
+	htmlrenderer.render( scene, camera );
 	MovePlanets(planets);
-	// console.log(earth.vx)
 }
 animate();
