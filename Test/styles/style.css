@@ -11,7 +11,7 @@ canvas {
 
 .menu{
     opacity: 70%;
-    background-color: darkslategray;
+    background-color: rgb(43, 48, 48);
     color: white;
     caret-color: transparent;
     transition: 0.5s;
@@ -26,6 +26,18 @@ canvas {
     width: 100%;
     float: left;
     align-items: center;
+
+}
+
+
+.menu_footer{
+    height: 5%;
+    width: 100%;
+    display: flex;
+    background-color: aqua;
+    position: relative;
+    top: 95%;
+    bottom: 0;
 }
 
 #sidebar-button{

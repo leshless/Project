@@ -5,6 +5,16 @@ import {CSS2DRenderer, CSS2DObject} from "../modules/CSS2DRenderer.js"
 const GRAVITY = 6.67 * Math.pow(10, -11);
 let planets = [];
 
+
+class Some_planet{
+	constructor(name = null, description=null, main_planet){
+		this.planet_name = name
+		this.planet_description = description,
+		this.tree_planet = main_planet
+	}
+}
+
+
 function Planet(mass, planetmesh){
 	this.m = mass;
 	this.r = 1;
@@ -63,14 +73,14 @@ function SimPhysics(dt, planet1, planet2){
 function MovePlanets(planets){
 	for (let i = 0; i < planets.length - 1; i++){
 		for (let j = i + 1; j < planets.length; j++){
-			SimPhysics(100, planets[i], planets[j])
+			SimPhysics(100, planets[i].tree_planet, planets[j].tree_planet)
 		};
 	};
 
 	for (let i = 0; i < planets.length; i++){
-		planets[i].mesh.position.x = planets[i].x;
-		planets[i].mesh.position.y = planets[i].y;
-		planets[i].mesh.position.z = planets[i].z;
+		planets[i].tree_planet.mesh.position.x = planets[i].tree_planet.x;
+		planets[i].tree_planet.mesh.position.y = planets[i].tree_planet.y;
+		planets[i].tree_planet.mesh.position.z = planets[i].tree_planet.z;
 	};
 }
 
@@ -105,20 +115,37 @@ const material = new THREE.MeshStandardMaterial( { wireframe: true } );
 // scene.add(menu);
 
 
-let earth = new Planet(5000, new THREE.Mesh(geometry, material));
-
-let moon1 = new Planet(1, new THREE.Mesh(geometry, material));
-moon1.mesh.position.x = 50;
-moon1.x = 10;
-moon1.vy = -0.0001
 
 
-let moon2 = new Planet(1, new THREE.Mesh(geometry, material));
-moon2.mesh.position.x = -10;
-moon2.x = -10
-moon2.vx = 0.0001
+let earth_tree = new Planet(5000, new THREE.Mesh(geometry, material));
 
-planets.push(earth, moon1, moon2)
+let Earth = new Some_planet("Earth", "Our planet", earth_tree)
+
+let moon1_tree = new Planet(1, new THREE.Mesh(geometry, material));
+moon1_tree.mesh.position.x = 50;
+moon1_tree.x = 10;
+moon1_tree.vy = -0.0001
+
+let Moon1 = new Some_planet("Moon1", "Our moon", moon1_tree)
+
+let moon2_tree = new Planet(1, new THREE.Mesh(geometry, material));
+moon2_tree.mesh.position.x = -10;
+moon2_tree.x = -10
+moon2_tree.vx = 0.0001
+
+
+let Moon2 = new Some_planet("Moon2", "leshless pidor", moon2_tree)
+
+planets.push(Earth, Moon1, Moon2)
+
+
+console.log(planets)
+
+function add_element_to_menu(el){
+	const doc = document.getElementById("sidebar")
+	doc.innerHTML  += `<br>${el.planet_name}</br>`
+}
+
 
 window.addEventListener("resize", function(){
 	let width = window.innerWidth;
