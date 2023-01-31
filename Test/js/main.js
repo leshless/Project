@@ -84,12 +84,12 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
-const htmlrenderer = new CSS2DRenderer();
-htmlrenderer.setSize(window.innerWidth, window.innerHeight);
-htmlrenderer.domElement.style.position = "absolute";
-htmlrenderer.domElement.style.top = "0px";
-htmlrenderer.domElement.style.pointerEvents = "none";
-document.body.appendChild(htmlrenderer.domElement);
+// const htmlrenderer = new CSS2DRenderer();
+// htmlrenderer.setSize(window.innerWidth, window.innerHeight);
+// htmlrenderer.domElement.style.position = "absolute";
+// htmlrenderer.domElement.style.top = "0px";
+// htmlrenderer.domElement.style.pointerEvents = "none";
+// document.body.appendChild(htmlrenderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.update();
@@ -101,10 +101,8 @@ light.position.y = 10;
 const geometry = new THREE.SphereGeometry(1, 8, 8);
 const material = new THREE.MeshStandardMaterial( { wireframe: true } );
 
-const m = document.getElementById("all_planets")
-m.className = "all_planets"
-const menu = new CSS2DObject(m);
-scene.add(menu);
+// const menu = new CSS2DObject(m);
+// scene.add(menu);
 
 
 let earth = new Planet(5000, new THREE.Mesh(geometry, material));
@@ -126,7 +124,7 @@ window.addEventListener("resize", function(){
 	let width = window.innerWidth;
 	let height = window.innerHeight;
 	renderer.setSize(width, height);
-	htmlrenderer.setSize(width, height);
+	// htmlrenderer.setSize(width, height);
 	camera.aspect = width / height;
 	camera.updateProjectionMatrix();
 });
@@ -136,7 +134,7 @@ function animate() {
 	requestAnimationFrame( animate );
 	controls.update();
 	renderer.render( scene, camera );
-	htmlrenderer.render( scene, camera );
+	// htmlrenderer.render( scene, camera );
 	MovePlanets(planets);
 }
 animate();
