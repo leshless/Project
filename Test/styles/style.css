@@ -9,33 +9,40 @@ canvas {
     z-index: 1;
 }
 
+.menu{
+    opacity: 70%;
+    background-color: darkslategray;
+    color: white;
+    caret-color: transparent;
+    transition: 0.5s;
+    overflow: hidden;
+}
+
 .main{
     position: relative;
     overflow: hidden;
+    display: flex;
     height: 100%;
+    width: 100%;
     float: left;
     align-items: center;
 }
 
-.sidebar-button{
-    border: none;
+#sidebar-button{
     position: relative;
     z-index: 3;
     float: left;
-    color: white;
-    height: 40px;
-    background-color: gray;
-    caret-color: transparent;
+    height: 7%;
+    border: thick double;
+    border-left: none;
 }
 
-.sidebar {
+#sidebar {
     position: relative;
     z-index: 3;
     float: left;
     overflow: hidden;
     height: 100%;
-    width: 140px;
-    transition: 0.5s;
-    color: cyan;
-    background-color: gray;   
+    width: 13%;
+    border-right: thick double;
 }

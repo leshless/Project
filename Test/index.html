@@ -10,15 +10,15 @@
     <body> 
         <script src="./js/main.js" type="module"></script>
         <div class="main">
-            <div id="sidebar" class="sidebar">
+            <div id="sidebar" class="menu">
                 HELLO
             </div>
-            <button id="sidebar-button" class="sidebar-button" onclick="changeSidebar()">☰</button>
+            <button id="sidebar-button" class="menu" onclick="changeSidebar()">☰</button>
             <script>
                 let closed = false
                 function changeSidebar(){
                     if (closed){
-                        document.getElementById("sidebar").style.width = "140px";
+                        document.getElementById("sidebar").style.width = "13%";
                     }else{
                         document.getElementById("sidebar").style.width = "0px";
                     }
