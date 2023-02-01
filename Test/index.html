@@ -8,26 +8,19 @@
         <title>Document</title>
     </head>
     <body> 
+        <!-- <script src="./js/ui.js" type="module"></script> -->
         <div class="main">
-            <div id="sidebar" class="menu">
-                <div class="menu_footer">
+            <div class="menu" id="top-panel"></div>
+            <div id="left-sidebar" class="menu">
+                <div class="menu" id="menu-footer">
                     <div class="tutorials">tutorials</div>
                     <div class="presets">Presets</div>
                 </div>
             </div>
-            <button id="sidebar-button" class="menu" onclick="changeSidebar()">☰</button>
-            <script>
-                let closed = false
-                function changeSidebar(){
-                    if (closed){
-                        document.getElementById("sidebar").style.width = "13%";
-                    }else{
-                        document.getElementById("sidebar").style.width = "0px";
-                    }
-                    closed = !closed
-                }
-            </script>
-        </div> 
+            <button id="left-sidebar-button" class="menu" onclick="changeSidebar()">☰</button>
+        </div>
+
+        <script src="./js/ui.js"></script>
         <script src="./js/main.js" type="module"></script>
     </body>
 </html> 
