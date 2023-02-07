@@ -9,19 +9,16 @@
     </head>
     <body> 
         <div id="main">
-            <div class="menu" id="top-panel"></div>
-            <div id="left-sidebar" class="menu">
-                <div class="menu" id="menu-footer">
-                    <div class="tutorials">tutorials</div>
-                    <div class="presets">Presets</div>
-                </div>
+            <div id="top-panel" class="menu"></div>
+            <div id="left-menu"">
+                <div id="left-sidebar" class="menu"></div>
+                <button id="left-sidebar-button" class="menu" onclick="resizeSidebarLeft()">☰</button>
             </div>
-            <button id="left-sidebar-button" class="menu" onclick="resizeSidebarLeft()">☰</button>
-
-            <button id="right-sidebar-button" class="menu" onclick="resizeSidebarRight()">☰</button>
-            <div id="right-sidebar" class="menu"></div>
+            <div id="right-menu">
+                <div id="right-sidebar" class="menu"></div>
+                <button id="right-sidebar-button" class="menu" onclick="resizeSidebarRight()">☰</button>
+            </div>
         </div>
-
         <script src="./js/ui.js"></script>
         <script src="./js/main.js" type="module"></script>
     </body>
