@@ -1,31 +1,24 @@
 import * as THREE from '../modules/three.module.js';
 import {OrbitControls} from '../modules/OrbitControls.js'
-import {CSS2DRenderer, CSS2DObject} from "../modules/CSS2DRenderer.js"
 
 const GRAVITY = 6.67 * Math.pow(10, -11);
 let planets = [];
 
-
-class Some_planet{
-	constructor(name = null, description=null, main_planet){
-		this.planet_name = name
-		this.planet_description = description,
-		this.tree_planet = main_planet
-	}
-}
-
-
-function Planet(mass, planetmesh){
+function Planet(mass, x, y, z, planetmesh){
 	this.m = mass;
 	this.r = 1;
-    this.x = 0.0;
-    this.y = 0.0;
-    this.z = 0.0;
+    this.x = x;
+    this.y = y;
+    this.z = z;
     this.vx = 0.0;
     this.vy = 0.0;
     this.vz = 0.0;
     this.mesh = planetmesh;
     scene.add(this.mesh);
+	this.mesh.position.x = x;
+	this.mesh.position.y = y;
+	this.mesh.position.z = z;
+	planets.push(this)
 }
 
 function GetA(m, dx, dy, dz) {
@@ -73,14 +66,14 @@ function SimPhysics(dt, planet1, planet2){
 function MovePlanets(planets){
 	for (let i = 0; i < planets.length - 1; i++){
 		for (let j = i + 1; j < planets.length; j++){
-			SimPhysics(100, planets[i].tree_planet, planets[j].tree_planet)
+			SimPhysics(100, planets[i], planets[j])
 		};
 	};
 
 	for (let i = 0; i < planets.length; i++){
-		planets[i].tree_planet.mesh.position.x = planets[i].tree_planet.x;
-		planets[i].tree_planet.mesh.position.y = planets[i].tree_planet.y;
-		planets[i].tree_planet.mesh.position.z = planets[i].tree_planet.z;
+		planets[i].mesh.position.x = planets[i].x;
+		planets[i].mesh.position.y = planets[i].y;
+		planets[i].mesh.position.z = planets[i].z;
 	};
 }
 
@@ -88,18 +81,11 @@ function MovePlanets(planets){
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-camera.position.z = 20;
+camera.position.set(0, 15, 0);
 
-const renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("canvas") });
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
-
-// const htmlrenderer = new CSS2DRenderer();
-// htmlrenderer.setSize(window.innerWidth, window.innerHeight);
-// htmlrenderer.domElement.style.position = "absolute";
-// htmlrenderer.domElement.style.top = "0px";
-// htmlrenderer.domElement.style.pointerEvents = "none";
-// document.body.appendChild(htmlrenderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.update();
@@ -108,60 +94,68 @@ const light = new THREE.AmbientLight(0xffffff);
 scene.add(light);
 light.position.y = 10;
 
+const plane = new THREE.Mesh(
+	new THREE.PlaneGeometry(1000, 1000, 100, 100),
+	new THREE.MeshBasicMaterial({wireframe: true, side: "doubleside", color: 0x111111})
+)
+plane.name = "plane";
+scene.add(plane);
+plane.rotation.x += Math.PI / 2
+
 const geometry = new THREE.SphereGeometry(1, 8, 8);
-const material = new THREE.MeshStandardMaterial( { wireframe: true } );
+const material = new THREE.MeshStandardMaterial( { wireframe: true, color: 0xffffff} );
 
-// const menu = new CSS2DObject(m);
-// scene.add(menu);
+let earthghost = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial( { wireframe: true, color: 0x444444} ));
+let earth_tree = new Planet(5000, 0, 0, 0, new THREE.Mesh(geometry, material));
 
+let mousepos = new THREE.Vector2();
+let raycaster = new THREE.Raycaster();
+var ghostpos = new THREE.Vector3();
+let intersects;
 
+window.onmousemove = function(e){
+	mousepos.x = (e.clientX / window.innerWidth) * 2 - 1;
+	mousepos.y = -(e.clientY / window.innerHeight) * 2 + 1;
+	raycaster.setFromCamera(mousepos, camera);
+	intersects = raycaster.intersectObjects(scene.children);
+	intersects.forEach(function(intersect){
+		if (intersect.object.name === "plane"){
+			ghostpos.copy(intersect.point);
+		}
+	})
+};
 
-
-let earth_tree = new Planet(5000, new THREE.Mesh(geometry, material));
-
-let Earth = new Some_planet("Earth", "Our planet", earth_tree)
-
-let moon1_tree = new Planet(1, new THREE.Mesh(geometry, material));
-moon1_tree.mesh.position.x = 50;
-moon1_tree.x = 10;
-moon1_tree.vy = -0.0001
-
-let Moon1 = new Some_planet("Moon1", "Our moon", moon1_tree)
-
-let moon2_tree = new Planet(1, new THREE.Mesh(geometry, material));
-moon2_tree.mesh.position.x = -10;
-moon2_tree.x = -10
-moon2_tree.vx = 0.0001
-
-
-let Moon2 = new Some_planet("Moon2", "leshless pidor", moon2_tree)
-
-planets.push(Earth, Moon1, Moon2)
-
-
-console.log(planets)
-
-function add_element_to_menu(el){
-	const doc = document.getElementById("sidebar")
-	doc.innerHTML  += `<br>${el.planet_name}</br>`
-}
-
-
-window.addEventListener("resize", function(){
+window.onresize = function(){
 	let width = window.innerWidth;
 	let height = window.innerHeight;
 	renderer.setSize(width, height);
-	// htmlrenderer.setSize(width, height);
 	camera.aspect = width / height;
 	camera.updateProjectionMatrix();
-});
+};
+
+
+let ghostplaceble = false
+function HandleGhost(){
+	if (earthdown && overcanvas) {
+		scene.add(earthghost);
+		earthghost.position.copy(ghostpos);
+		ghostplaceble = true;
+	}else if (ghostplaceble && overcanvas){
+		scene.remove(earthghost);
+		let newplanet = new Planet(1, ghostpos.x, ghostpos.y, ghostpos.z, new THREE.Mesh(geometry, material));
+		ghostplaceble = false;
+	}else{
+		scene.remove(earthghost);
+		ghostplaceble = false;
+	}
+}
 
 
 function animate() {
 	requestAnimationFrame( animate );
 	controls.update();
-	renderer.render( scene, camera );
-	// htmlrenderer.render( scene, camera );
+	HandleGhost();
 	MovePlanets(planets);
+	renderer.render( scene, camera );
 }
 animate();

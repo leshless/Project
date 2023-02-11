@@ -1,3 +1,15 @@
+::-moz-selection { 
+    background: transparent;
+}
+
+::selection {
+    background: transparent;
+}
+
+#objects-menu::-webkit-scrollbar {
+    width: 0px;  
+}
+
 body {
     margin: 0;
     overflow: hidden;
@@ -16,7 +28,6 @@ canvas {
     color: #B8B8B8;
     caret-color: transparent;
     border: none;
-    transition: 0.5s;
     overflow: hidden;
     z-index: 1;
 }
@@ -83,4 +94,17 @@ canvas {
     width: 88%;
 }
 
+#objects-menu{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-content: flex-start ;
+    flex-wrap: wrap;
+    overflow-y: scroll;
+}
 
+#earth{
+    width: 100px; 
+    height: 100px; 
+    background-color: white
+}

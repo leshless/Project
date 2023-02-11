@@ -7,11 +7,16 @@
         <link rel="stylesheet" href="./styles/style.css">
         <title>Document</title>
     </head>
-    <body> 
+    <body onmouseup="ScreenRelease()"> 
+        <canvas id="canvas"></canvas>
         <div id="main">
             <div id="top-panel" class="menu"></div>
             <div id="left-menu"">
-                <div id="left-sidebar" class="menu"></div>
+                <div id="left-sidebar" class="menu">
+                    <div id="objects-menu">
+                        <img src="./images/earth.png" alt="earth" id="earth" onmousedown="earthPress()">
+                    </div>
+                </div>
                 <button id="left-sidebar-button" class="menu" onclick="resizeSidebarLeft()">☰</button>
             </div>
             <div id="right-menu">
