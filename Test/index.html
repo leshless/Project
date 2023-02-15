@@ -5,26 +5,31 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="./styles/style.css">
-        <title>Document</title>
+        <title>Project</title>
     </head>
-    <body onmouseup="ScreenRelease()"> 
+    <body id="body"> 
         <canvas id="canvas"></canvas>
         <div id="main">
             <div id="top-panel" class="menu"></div>
             <div id="left-menu"">
                 <div id="left-sidebar" class="menu">
                     <div id="objects-menu">
-                        <img src="./images/earth.png" alt="earth" id="earth" onmousedown="earthPress()">
+                        <img src="./images/earth.png" alt="earth" id="earth" class="planet" onmousedown="earthPress()">
+                        <img src="./images/moon.png" alt="moon" id="moon" class="planet" onmousedown="moonPress()">
                     </div>
                 </div>
-                <button id="left-sidebar-button" class="menu" onclick="resizeSidebarLeft()">☰</button>
+                <button id="left-sidebar-button" class="menu"">☰</button>
             </div>
             <div id="right-menu">
-                <div id="right-sidebar" class="menu"></div>
-                <button id="right-sidebar-button" class="menu" onclick="resizeSidebarRight()">☰</button>
+                <div id="right-sidebar" class="menu">
+                    <canvas id="prvwcanvas"></canvas>
+                    <table id="description" border="1" class="menu"></table>
+                </div>
+                <button id="right-sidebar-button" class="menu">☰</button>
             </div>
         </div>
         <script src="./js/ui.js"></script>
+        <script src="./js/objectinfo.js"></script>
         <script src="./js/main.js" type="module"></script>
     </body>
 </html> 

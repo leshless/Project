@@ -1,24 +1,39 @@
 import * as THREE from '../modules/three.module.js';
 import {OrbitControls} from '../modules/OrbitControls.js'
+import { TWEEN } from '../modules/tween.module.min.js'
 
 const GRAVITY = 6.67 * Math.pow(10, -11);
 let planets = [];
+let planetid = 0;
 
-function Planet(mass, x, y, z, planetmesh){
-	this.m = mass;
-	this.r = 1;
-    this.x = x;
-    this.y = y;
-    this.z = z;
-    this.vx = 0.0;
-    this.vy = 0.0;
-    this.vz = 0.0;
-    this.mesh = planetmesh;
-    scene.add(this.mesh);
-	this.mesh.position.x = x;
-	this.mesh.position.y = y;
-	this.mesh.position.z = z;
-	planets.push(this)
+function GetMesh(name, isghost){
+	let color = 0xffffff
+	if (isghost){color = 0x444444}
+	return new THREE.Mesh(new THREE.SphereGeometry(planetinfo.get(name).radius, 8, 8), new THREE.MeshStandardMaterial( { wireframe: true, color: color} ))
+}
+
+class Planet {
+	constructor(name, vector3) {
+		this.info = {}
+		Object.assign(this.info, planetinfo.get(name))
+
+		this.m = this.info.mass;
+		this.r = this.info.radius;
+
+		this.x = vector3.x;
+		this.y = vector3.y;
+		this.z = vector3.z;
+		this.vx = 0.0001;
+		this.vy = 0.0;
+		this.vz = 0.0;
+
+		this.mesh = GetMesh(name, false);
+		scene.add(this.mesh);
+		this.mesh.position.copy(ghostpos);
+		this.mesh.name = planetid;
+		planetid += 1;
+		planets.push(this);
+	}
 }
 
 function GetA(m, dx, dy, dz) {
@@ -77,18 +92,34 @@ function MovePlanets(planets){
 	};
 }
 
-
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-camera.position.set(0, 15, 0);
+camera.position.set(0, 30, 0);
 
 const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("canvas") });
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
 const controls = new OrbitControls(camera, renderer.domElement);
+controls.enablePan = false;
 controls.update();
+
+const prvwcamera = new THREE.PerspectiveCamera(50, 1, 0.01, 100);
+
+const prvwrenderer = new THREE.WebGLRenderer({canvas: document.getElementById("prvwcanvas")});
+document.getElementById("right-sidebar").insertBefore(prvwrenderer.domElement, document.getElementById("description"))
+
+const prvwcontrols = new OrbitControls(prvwcamera, prvwrenderer.domElement);
+prvwcontrols.enablePan = false;
+prvwcontrols.enableZoom = false;
+prvwcontrols.autoRotate = true;
+prvwcontrols.update();
+
+const ratio = +document.getElementById("right-sidebar").clientWidth;
+prvwrenderer.setSize(ratio, ratio);
+prvwcamera.aspect = ratio / ratio;
+prvwcamera.updateProjectionMatrix();
 
 const light = new THREE.AmbientLight(0xffffff);
 scene.add(light);
@@ -102,27 +133,141 @@ plane.name = "plane";
 scene.add(plane);
 plane.rotation.x += Math.PI / 2
 
-const geometry = new THREE.SphereGeometry(1, 8, 8);
-const material = new THREE.MeshStandardMaterial( { wireframe: true, color: 0xffffff} );
+function SelectObject(object){
+	if (object != currentselected){
+        tbl.innerHTML = ""
+        currentselected = object;
+		ChangeCameraTarget();
+        for (const [name, info] of Object.entries(object.info)) {
+            const row = document.createElement("tr");
+            row.className = "description-node"
+            const propertyname = document.createElement("td");
+            const propertynametext = document.createTextNode(name);
+            propertyname.appendChild(propertynametext);
+            const propertyinfo = document.createElement("td");
+            const propertyinfotext = document.createTextNode(info);
+            propertyinfo.appendChild(propertyinfotext);
+            row.appendChild(propertyname);
+            row.appendChild(propertyinfo);
+            tbl.appendChild(row)
+        }
+    }
+}
 
-let earthghost = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial( { wireframe: true, color: 0x444444} ));
-let earth_tree = new Planet(5000, 0, 0, 0, new THREE.Mesh(geometry, material));
+document.getElementById('canvas').onclick = function(){
+	if (currentover){
+        SelectObject(currentover);
+	}
+}
+
+function ChangeCameraTarget(){
+	const initposition = {
+		x: camera.position.x,
+		y: camera.position.y,
+		z: camera.position.z,
+		lax: controls.target.x,
+		lay: controls.target.y,
+		laz: controls.target.z,
+	}
+
+	const endposition = {
+		x: currentselected.mesh.position.x,
+		y: currentselected.mesh.position.y + 40,
+		z: currentselected.mesh.position.z + 40,
+		lax: currentselected.mesh.position.x,
+		lay: currentselected.mesh.position.y,
+		laz: currentselected.mesh.position.z,
+	}
+
+
+	const tweenposition = new TWEEN.Tween(initposition)
+	.to(endposition, 1000)
+	.onUpdate(function(position){
+		camera.position.set(position.x, position.y, position.z);
+		camera.lookAt(position.lax, position.lay, position.laz)})
+	.easing(TWEEN.Easing.Quartic.Out)
+	.onComplete(function() {
+		controls.target.copy(currentselected.mesh.position);
+		controls.update()
+		});
+	tweenposition.start();
+
+	prvwcamera.position.set(currentselected.mesh.position.x + currentselected.r, currentselected.mesh.position.y, currentselected.mesh.position.z);
+	prvwcontrols.target.copy(currentselected.mesh.position);
+	prvwcontrols.minDistance = currentselected.r *3;
+	prvwcontrols.maxDistance = currentselected.r *3;
+	prvwcamera.lookAt(currentselected.mesh.position);
+	prvwcontrols.update()
+}
+
+const prevposition = new THREE.Vector3();
+function ChangeCameraPosition(){
+	if (currentselected != null){
+		const deltaposition = new THREE.Vector3();
+		deltaposition.copy(currentselected.mesh.position);
+		deltaposition.sub(prevposition);
+
+		camera.position.set(deltaposition.x + camera.position.x, deltaposition.y + camera.position.y, deltaposition.z + camera.position.z);
+		controls.target.copy(currentselected.mesh.position);
+		controls.update();
+
+		prvwcamera.position.set(deltaposition.x + prvwcamera.position.x, deltaposition.y + prvwcamera.position.y, deltaposition.z + prvwcamera.position.z);
+		prvwcontrols.target.copy(currentselected.mesh.position);
+		prvwcontrols.update()
+
+		prevposition.copy(currentselected.mesh.position);
+	}
+}
 
 let mousepos = new THREE.Vector2();
 let raycaster = new THREE.Raycaster();
-var ghostpos = new THREE.Vector3();
+let ghostpos = new THREE.Vector3();
 let intersects;
 
+let currentghostmesh;
+let currentplaceble = false
+function HandleGhost(){
+	if (currentpressed && overcanvas) {
+		if (currentghostmesh == null){currentghostmesh = GetMesh(currentpressed, true)}
+		scene.add(currentghostmesh);
+		currentghostmesh.position.copy(ghostpos);
+		currentplaceble = currentpressed;
+	}else if (currentplaceble && overcanvas){
+		scene.remove(currentghostmesh);
+		currentghostmesh = null
+		new Planet(currentplaceble, ghostpos);
+		currentplaceble = false;
+	}else{
+		scene.remove(currentghostmesh);
+		currentghostmesh = null
+		currentplaceble = false;
+	}
+}
+
 window.onmousemove = function(e){
-	mousepos.x = (e.clientX / window.innerWidth) * 2 - 1;
-	mousepos.y = -(e.clientY / window.innerHeight) * 2 + 1;
-	raycaster.setFromCamera(mousepos, camera);
-	intersects = raycaster.intersectObjects(scene.children);
-	intersects.forEach(function(intersect){
-		if (intersect.object.name === "plane"){
-			ghostpos.copy(intersect.point);
+	if (overcanvas){
+		mousepos.x = (e.clientX / window.innerWidth) * 2 - 1;
+		mousepos.y = -(e.clientY / window.innerHeight) * 2 + 1;
+		raycaster.setFromCamera(mousepos, camera);
+		intersects = raycaster.intersectObjects(scene.children);
+		if (intersects.length == 1){
+			ghostpos.copy(intersects[0].point)
+			currentover = null;
+		}else{
+			intersects.forEach(function(intersect){
+				if (intersect.object.name === "plane"){
+					ghostpos.copy(intersect.point);
+				}else{
+					planets.forEach(function(planet){
+						if(intersect.object.name === planet.mesh.name){
+							currentover = planet;
+						}
+					})
+				}
+			})
 		}
-	})
+		
+	}
 };
 
 window.onresize = function(){
@@ -131,31 +276,20 @@ window.onresize = function(){
 	renderer.setSize(width, height);
 	camera.aspect = width / height;
 	camera.updateProjectionMatrix();
+
+	const ratio = +document.getElementById("right-sidebar").clientWidth;
+	prvwrenderer.setSize(ratio, ratio);
+	prvwcamera.aspect = ratio / ratio;
+	prvwcamera.updateProjectionMatrix();
 };
 
-
-let ghostplaceble = false
-function HandleGhost(){
-	if (earthdown && overcanvas) {
-		scene.add(earthghost);
-		earthghost.position.copy(ghostpos);
-		ghostplaceble = true;
-	}else if (ghostplaceble && overcanvas){
-		scene.remove(earthghost);
-		let newplanet = new Planet(1, ghostpos.x, ghostpos.y, ghostpos.z, new THREE.Mesh(geometry, material));
-		ghostplaceble = false;
-	}else{
-		scene.remove(earthghost);
-		ghostplaceble = false;
-	}
-}
-
-
-function animate() {
+function animate(t) {
 	requestAnimationFrame( animate );
-	controls.update();
 	HandleGhost();
 	MovePlanets(planets);
+	TWEEN.update(t);
+	ChangeCameraPosition();
 	renderer.render( scene, camera );
+	prvwrenderer.render(scene, prvwcamera)
 }
 animate();

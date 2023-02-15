@@ -1,8 +1,9 @@
-document.getElementById('earth').ondragstart = function() { return false; };
+document.getElementById('earth').ondragstart = function() {return false; };
+document.getElementById('moon').ondragstart = function() {return false; };
 
 let closedleft = false
 let closedright = false
-function resizeSidebarLeft(){
+document.getElementById("left-sidebar-button").onclick =function(){
     if (closedleft){
         document.getElementById("left-sidebar").style.width = "88%";
     }else{
@@ -10,7 +11,7 @@ function resizeSidebarLeft(){
     }
     closedleft = !closedleft;
 }
-function resizeSidebarRight(){
+document.getElementById("right-sidebar-button").onclick = function(){
     if (closedright){
         document.getElementById("right-sidebar").style.width = "88%";
     }else{
@@ -19,13 +20,16 @@ function resizeSidebarRight(){
     closedright = !closedright;
 }
 
-let earthdown = false;
+let currentpressed = null;
 function earthPress(){
-    earthdown = true;
+    currentpressed = "earth";
 };
-function ScreenRelease(){
-    earthdown = false;
+function moonPress(){
+    currentpressed = "moon";
 };
+document.getElementById("body").onmouseup = function(){
+    currentpressed = null;
+}
 
 let overcanvas = false;
 document.getElementById("canvas").onmouseenter = function(){
@@ -34,3 +38,8 @@ document.getElementById("canvas").onmouseenter = function(){
 document.getElementById('canvas').onmouseleave = function(){
     overcanvas = false
 }
+
+const tbl = document.getElementById('description');
+let currentover = null;
+currentselected = null;
+

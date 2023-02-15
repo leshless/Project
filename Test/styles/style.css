@@ -23,7 +23,6 @@ canvas {
 }
 
 .menu{
-    opacity: 70%;
     background-color: rgb(43, 48, 48);
     color: #B8B8B8;
     caret-color: transparent;
@@ -92,6 +91,9 @@ canvas {
 
 #right-sidebar {
     width: 88%;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: start;
 }
 
 #objects-menu{
@@ -103,8 +105,25 @@ canvas {
     overflow-y: scroll;
 }
 
-#earth{
+.planet{
     width: 100px; 
     height: 100px; 
     background-color: white
 }
+
+#description{
+    width: 100%;
+    table-layout: fixed;
+    border: 1px solid white;
+    border-collapse: collapse;
+}
+
+.description-node{
+    width: 100%;
+    text-align: center;
+}
+
+#prvwcanvas{
+    position: relative;
+}
+
