@@ -10,12 +10,13 @@
     <body id="body"> 
         <canvas id="canvas"></canvas>
         <div id="main">
-            <div id="top-panel" class="menu"></div>
-            <div id="left-menu"">
+            <!-- <div id="top-panel" class="menu"></div> -->
+            <div id="left-menu">
                 <div id="left-sidebar" class="menu">
+                    <div id="objects-title" class="text">Меню объектов</div>
                     <div id="objects-menu">
-                        <img src="./images/earth.png" alt="earth" id="earth" class="planet" onmousedown="earthPress()">
-                        <img src="./images/moon.png" alt="moon" id="moon" class="planet" onmousedown="moonPress()">
+                        <img src="./images/earth.png" alt="earth" id="earth" class="planet" draggable="true">
+                        <img src="./images/moon.png" alt="moon" id="moon" class="planet" draggable="true">
                     </div>
                 </div>
                 <button id="left-sidebar-button" class="menu"">☰</button>
@@ -23,7 +24,7 @@
             <div id="right-menu">
                 <div id="right-sidebar" class="menu">
                     <canvas id="prvwcanvas"></canvas>
-                    <table id="description" border="1" class="menu"></table>
+                    <table id="description" class="menu text"></table>
                 </div>
                 <button id="right-sidebar-button" class="menu">☰</button>
             </div>

@@ -1,5 +1,8 @@
-document.getElementById('earth').ondragstart = function() {return false; };
-document.getElementById('moon').ondragstart = function() {return false; };
+document.getElementById('earth').ondragstart = ObjectDrag;
+document.getElementById('moon').ondragstart = ObjectDrag;
+function ObjectDrag(e){
+    return false
+}
 
 let closedleft = false
 let closedright = false
@@ -21,11 +24,11 @@ document.getElementById("right-sidebar-button").onclick = function(){
 }
 
 let currentpressed = null;
-function earthPress(){
-    currentpressed = "earth";
+document.getElementById("earth").onmousedown = function(){
+    currentpressed = "Earth";
 };
-function moonPress(){
-    currentpressed = "moon";
+document.getElementById("moon").onmousedown = function(){
+    currentpressed = "Moon";
 };
 document.getElementById("body").onmouseup = function(){
     currentpressed = null;

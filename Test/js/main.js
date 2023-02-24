@@ -7,12 +7,18 @@ let planets = [];
 let planetid = 0;
 
 function GetMesh(name, isghost){
-	let color = 0xffffff
-	if (isghost){color = 0x444444}
-	return new THREE.Mesh(new THREE.SphereGeometry(planetinfo.get(name).radius, 8, 8), new THREE.MeshStandardMaterial( { wireframe: true, color: color} ))
+	const texture = new THREE.TextureLoader().load(planetinfo.get(name).texture);
+	let opacity = 1;
+	let transparent = false
+	if (isghost){opacity = 0.3; transparent = true}
+	return new THREE.Mesh(new THREE.SphereGeometry(planetinfo.get(name).radius, 50, 50), new THREE.MeshLambertMaterial( {
+		map: texture,
+		transparent: transparent,
+		opacity: opacity
+	}))
 }
 
-class Planet {
+class Planet {	
 	constructor(name, vector3) {
 		this.info = {}
 		Object.assign(this.info, planetinfo.get(name))
@@ -23,14 +29,21 @@ class Planet {
 		this.x = vector3.x;
 		this.y = vector3.y;
 		this.z = vector3.z;
-		this.vx = 0.0001;
+		this.vx = 0.0;
 		this.vy = 0.0;
 		this.vz = 0.0;
+
+		if (name == "Moon"){this.vx = 0.000001}
 
 		this.mesh = GetMesh(name, false);
 		scene.add(this.mesh);
 		this.mesh.position.copy(ghostpos);
 		this.mesh.name = planetid;
+
+		this.trailmesh = new THREE.InstancedMesh(new THREE.SphereGeometry(0.01, 4, 4), new THREE.MeshBasicMaterial({color: 0xffffff}), 10000);
+		scene.add(this.trailmesh);
+		this.trailinstances = 0;
+
 		planetid += 1;
 		planets.push(this);
 	}
@@ -59,7 +72,7 @@ function SimPhysics(dt, planet1, planet2){
 	planet1.vz += p1az * dt;
 
 
-	if (planet1.r + planet2.r >= Math.pow(dx*dx + dy*dy + dz*dz, 1.5)){
+	if (planet1.r + planet2.r >= Math.pow(dx*dx + dy*dy + dz*dz, 0.5)){
 		planet2.vx *= -1 / 2;
 		planet2.vy *= -1 / 2;
 		planet2.vz *= -1 / 2;
@@ -81,7 +94,7 @@ function SimPhysics(dt, planet1, planet2){
 function MovePlanets(planets){
 	for (let i = 0; i < planets.length - 1; i++){
 		for (let j = i + 1; j < planets.length; j++){
-			SimPhysics(100, planets[i], planets[j])
+			SimPhysics(5000, planets[i], planets[j])
 		};
 	};
 
@@ -97,17 +110,23 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 camera.position.set(0, 30, 0);
 
-const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("canvas") });
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("canvas"), antialias: true});
 renderer.setSize( window.innerWidth, window.innerHeight );
+renderer.setPixelRatio(window.devicePixelRatio);
 document.body.appendChild( renderer.domElement );
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enablePan = false;
+controls.enableDamping = true;
+controls.dampingFactor = 0.6;
 controls.update();
+
+const prvwscene = new THREE.Scene();
 
 const prvwcamera = new THREE.PerspectiveCamera(50, 1, 0.01, 100);
 
-const prvwrenderer = new THREE.WebGLRenderer({canvas: document.getElementById("prvwcanvas")});
+const prvwrenderer = new THREE.WebGLRenderer({canvas: document.getElementById("prvwcanvas"), antialias: true});
+prvwrenderer.setPixelRatio(document.getElementById("prvwcanvas").devicePixelRatio);
 document.getElementById("right-sidebar").insertBefore(prvwrenderer.domElement, document.getElementById("description"))
 
 const prvwcontrols = new OrbitControls(prvwcamera, prvwrenderer.domElement);
@@ -121,36 +140,121 @@ prvwrenderer.setSize(ratio, ratio);
 prvwcamera.aspect = ratio / ratio;
 prvwcamera.updateProjectionMatrix();
 
-const light = new THREE.AmbientLight(0xffffff);
+const light = new THREE.AmbientLight(0xffffff, 0.2);
 scene.add(light);
+prvwscene.add(light.clone());
 light.position.y = 10;
 
+const pointlight = new THREE.PointLight(0xffffff, 1);
+scene.add(pointlight);
+pointlight.position.set(10, 15, 10);
+prvwscene.add(pointlight.clone());
+scene.add(pointlight);
+
+const vertices = [];
+for ( let i = 0; i < 10000; i ++ ) {
+
+	const x = THREE.MathUtils.randFloatSpread(2000);
+	const y = THREE.MathUtils.randFloatSpread(2000);
+	const z = THREE.MathUtils.randFloatSpread(2000);
+
+	if (x*x + y*y + z*z >= 20000){
+		vertices.push( x, y, z );
+	}
+}
+
+const startexture = new THREE.TextureLoader().load("https://threejs.org/examples/textures/sprites/disc.png");
+const starmaterial = new THREE.PointsMaterial( { map: startexture } );
+
+const stargeometry = new THREE.BufferGeometry();
+stargeometry.setAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
+
+const points = new THREE.Points( stargeometry, starmaterial );
+scene.add( points );
+
 const plane = new THREE.Mesh(
-	new THREE.PlaneGeometry(1000, 1000, 100, 100),
-	new THREE.MeshBasicMaterial({wireframe: true, side: "doubleside", color: 0x111111})
+	new THREE.PlaneGeometry(1000, 1000),
+	new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, transparent: true, opacity: 0})
 )
 plane.name = "plane";
 scene.add(plane);
 plane.rotation.x += Math.PI / 2
 
+function ChangePrvwScene(){
+	if (prvwscene.children.length != 2){
+		prvwscene.remove(prvwscene.children[2])
+	};
+	const meshclone = currentselected.mesh.clone();
+	meshclone.position.set(0, 0, 0);
+	prvwscene.add(meshclone)
+	prvwcamera.position.set(currentselected.r * 3, 0, 0);
+	prvwcontrols.minDistance = currentselected.r * 3;
+	prvwcontrols.maxDistance = currentselected.r * 3;
+	prvwcontrols.update()
+}
+
+function ChangeTableInfo(){
+	tbl.innerHTML = ""
+
+	const namerow = document.createElement("tr");
+	namerow.className = "property-node"
+
+	const namecell = document.createElement("td");
+	namecell.colSpan = "2";
+
+	const name = document.createTextNode(currentselected.info.name);
+
+	namecell.appendChild(name);
+	namerow.appendChild(namecell);
+	tbl.appendChild(namerow);
+
+
+	const massrow = document.createElement("tr");
+	massrow.className = "property-node"
+
+	const massproperty = document.createElement("td");
+	massproperty.appendChild(document.createTextNode("масса"));
+	
+	const massinfo = document.createElement("td");
+	massinfo.appendChild(document.createTextNode(currentselected.info.mass + " M⊕"));
+
+	massrow.appendChild(massproperty);
+	massrow.appendChild(massinfo);
+	tbl.appendChild(massrow);
+
+	const radiusrow = document.createElement("tr");
+	radiusrow.className = "property-node"
+
+	const radiusproperty = document.createElement("td");
+	radiusproperty.appendChild(document.createTextNode("радиус"));
+	
+	const radiusinfo = document.createElement("td");
+	radiusinfo.appendChild(document.createTextNode((currentselected.info.radius * 1000).toFixed(1) + " км"));
+
+	radiusrow.appendChild(radiusproperty);
+	radiusrow.appendChild(radiusinfo);
+	tbl.appendChild(radiusrow);
+
+
+	const descrow = document.createElement("tr");
+	descrow.className = "description-node"
+
+	const desccell = document.createElement("td");
+	desccell.colSpan = "2";
+
+	const desc = document.createTextNode(currentselected.info.description);
+
+	desccell.appendChild(desc);
+	descrow.appendChild(desccell);
+	tbl.appendChild(descrow);
+}
+
 function SelectObject(object){
 	if (object != currentselected){
-        tbl.innerHTML = ""
         currentselected = object;
+		ChangePrvwScene();
 		ChangeCameraTarget();
-        for (const [name, info] of Object.entries(object.info)) {
-            const row = document.createElement("tr");
-            row.className = "description-node"
-            const propertyname = document.createElement("td");
-            const propertynametext = document.createTextNode(name);
-            propertyname.appendChild(propertynametext);
-            const propertyinfo = document.createElement("td");
-            const propertyinfotext = document.createTextNode(info);
-            propertyinfo.appendChild(propertyinfotext);
-            row.appendChild(propertyname);
-            row.appendChild(propertyinfo);
-            tbl.appendChild(row)
-        }
+		ChangeTableInfo();
     }
 }
 
@@ -172,8 +276,8 @@ function ChangeCameraTarget(){
 
 	const endposition = {
 		x: currentselected.mesh.position.x,
-		y: currentselected.mesh.position.y + 40,
-		z: currentselected.mesh.position.z + 40,
+		y: currentselected.mesh.position.y + 10,
+		z: currentselected.mesh.position.z + 10,
 		lax: currentselected.mesh.position.x,
 		lay: currentselected.mesh.position.y,
 		laz: currentselected.mesh.position.z,
@@ -191,13 +295,6 @@ function ChangeCameraTarget(){
 		controls.update()
 		});
 	tweenposition.start();
-
-	prvwcamera.position.set(currentselected.mesh.position.x + currentselected.r, currentselected.mesh.position.y, currentselected.mesh.position.z);
-	prvwcontrols.target.copy(currentselected.mesh.position);
-	prvwcontrols.minDistance = currentselected.r *3;
-	prvwcontrols.maxDistance = currentselected.r *3;
-	prvwcamera.lookAt(currentselected.mesh.position);
-	prvwcontrols.update()
 }
 
 const prevposition = new THREE.Vector3();
@@ -210,10 +307,6 @@ function ChangeCameraPosition(){
 		camera.position.set(deltaposition.x + camera.position.x, deltaposition.y + camera.position.y, deltaposition.z + camera.position.z);
 		controls.target.copy(currentselected.mesh.position);
 		controls.update();
-
-		prvwcamera.position.set(deltaposition.x + prvwcamera.position.x, deltaposition.y + prvwcamera.position.y, deltaposition.z + prvwcamera.position.z);
-		prvwcontrols.target.copy(currentselected.mesh.position);
-		prvwcontrols.update()
 
 		prevposition.copy(currentselected.mesh.position);
 	}
@@ -241,6 +334,17 @@ function HandleGhost(){
 		scene.remove(currentghostmesh);
 		currentghostmesh = null
 		currentplaceble = false;
+	}
+}
+
+function UpdateTrail(){
+	for (let i = 0; i < planets.length; i++){
+		const bufferobj = new THREE.Object3D();
+		bufferobj.position.copy(planets[i].mesh.position)
+		bufferobj.updateMatrix();
+		planets[i].trailmesh.setMatrixAt(planets[i].trailinstances % 10000, bufferobj.matrix);
+		planets[i].trailmesh.instanceMatrix.needsUpdate = true;
+		planets[i].trailinstances += 1
 	}
 }
 
@@ -286,10 +390,15 @@ window.onresize = function(){
 function animate(t) {
 	requestAnimationFrame( animate );
 	HandleGhost();
+	UpdateTrail();
 	MovePlanets(planets);
 	TWEEN.update(t);
 	ChangeCameraPosition();
+	prvwcontrols.update();
 	renderer.render( scene, camera );
-	prvwrenderer.render(scene, prvwcamera)
+	prvwrenderer.render(prvwscene, prvwcamera)
 }
+
+SelectObject(new Planet("Earth", new THREE.Vector3(0, 0, 0)))
+
 animate();
