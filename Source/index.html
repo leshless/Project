@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="./styles/style.css">
+        <title>Project</title>
+    </head>
+    <body id="body"> 
+        <canvas id="canvas"></canvas>
+        <div id="main">
+            <!-- <div id="top-panel" class="menu"></div> -->
+            <div id="left-menu">
+                <div id="left-sidebar" class="menu">
+                    <div id="objects-title" class="text">Меню объектов</div>
+                    <div id="objects-menu">
+                        <img src="./images/earth.png" alt="earth" id="earth" class="planet" draggable="true">
+                        <img src="./images/moon.png" alt="moon" id="moon" class="planet" draggable="true">
+                    </div>
+                </div>
+                <button id="left-sidebar-button" class="menu"">☰</button>
+            </div>
+            <div id="right-menu">
+                <div id="right-sidebar" class="menu">
+                    <canvas id="prvwcanvas"></canvas>
+                    <table id="description" class="menu text"></table>
+                </div>
+                <button id="right-sidebar-button" class="menu">☰</button>
+            </div>
+        </div>
+        <script src="./js/objectinfo.js"></script>
+        <script src="./js/main.js" type="module"></script>
+        <script src="./js/ui.js"></script>
+    </body>
+</html> 
