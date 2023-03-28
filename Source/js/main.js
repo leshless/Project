@@ -1,24 +1,22 @@
 import * as THREE from '../modules/three.module.js';
 import {OrbitControls} from '../modules/OrbitControls.js'
 import { TWEEN } from '../modules/tween.module.min.js'
- 
-let currentselected = null;
-let mousepos = new THREE.Vector2();
-let raycaster = new THREE.Raycaster();
-let ghostpos = new THREE.Vector3();
-let intersects;
-let currentghostmesh;
-let currentover = null;
+import { planetinfo } from '../js/objectinfo.js';
+import { globals } from '../js/ui.js'; 
+
+const canvas = document.getElementById("canvas"); 
+const tbl = document.getElementById("description")
 
 const GRAVITY = 6.67 * Math.pow(10, -11);
 let planets = [];
 let planetid = 0;
 
+// onload
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 camera.position.set(0, 30, 0);
 
-const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("canvas"), antialias: true});
+const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true});
 renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setPixelRatio(window.devicePixelRatio);
 document.body.appendChild( renderer.domElement );
@@ -84,11 +82,17 @@ scene.add( points );
 
 const plane = new THREE.Mesh(
 	new THREE.PlaneGeometry(1000, 1000),
-	new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, transparent: true, opacity: 0})
+	new THREE.MeshBasicMaterial({ 
+		side: THREE.DoubleSide, 
+		transparent: true, 
+		opacity: 0,
+		depthWrite: false,
+	})
 )
 plane.name = "plane";
 scene.add(plane);
 plane.rotation.x += Math.PI / 2
+//onload
 
 
 
@@ -100,7 +104,8 @@ function GetMesh(name, isghost){
 	return new THREE.Mesh(new THREE.SphereGeometry(planetinfo.get(name).radius, 50, 50), new THREE.MeshLambertMaterial( {
 		map: texture,
 		transparent: transparent,
-		opacity: opacity
+		opacity: opacity,
+		depthWrite: !transparent,
 	}))
 }
 
@@ -189,9 +194,11 @@ function MovePlanets(){
 	};
 }
 
+let currentghostmesh;
+let ghostpos = new THREE.Vector3();
 function HandleGhost(){
-	if (currentpressed && overcanvas) {
-		if (currentghostmesh == null){currentghostmesh = GetMesh(currentpressed, true)}
+	if (globals.currentpressed && globals.overcanvas) {
+		if (currentghostmesh == null){currentghostmesh = GetMesh(globals.currentpressed, true)}
 		scene.add(currentghostmesh);
 		currentghostmesh.position.copy(ghostpos);
 	} else{
@@ -214,12 +221,12 @@ function ChangePrvwScene(){
 	if (prvwscene.children.length != 2){
 		prvwscene.remove(prvwscene.children[2])
 	};
-	const meshclone = currentselected.mesh.clone();
+	const meshclone = globals.currentselected.mesh.clone();
 	meshclone.position.set(0, 0, 0);
 	prvwscene.add(meshclone)
-	prvwcamera.position.set(currentselected.r * 3, 0, 0);
-	prvwcontrols.minDistance = currentselected.r * 3;
-	prvwcontrols.maxDistance = currentselected.r * 3;
+	prvwcamera.position.set(globals.currentselected.r * 3, 0, 0);
+	prvwcontrols.minDistance = globals.currentselected.r * 3;
+	prvwcontrols.maxDistance = globals.currentselected.r * 3;
 	prvwcontrols.update()
 }
 
@@ -232,7 +239,7 @@ function ChangeTableInfo(){
 	const namecell = document.createElement("td");
 	namecell.colSpan = "2";
 
-	const name = document.createTextNode(currentselected.info.name);
+	const name = document.createTextNode(globals.currentselected.info.name);
 
 	namecell.appendChild(name);
 	namerow.appendChild(namecell);
@@ -246,7 +253,7 @@ function ChangeTableInfo(){
 	massproperty.appendChild(document.createTextNode("масса"));
 	
 	const massinfo = document.createElement("td");
-	massinfo.appendChild(document.createTextNode(currentselected.info.mass + " M⊕"));
+	massinfo.appendChild(document.createTextNode(globals.currentselected.info.mass + " M⊕"));
 
 	massrow.appendChild(massproperty);
 	massrow.appendChild(massinfo);
@@ -259,7 +266,7 @@ function ChangeTableInfo(){
 	radiusproperty.appendChild(document.createTextNode("радиус"));
 	
 	const radiusinfo = document.createElement("td");
-	radiusinfo.appendChild(document.createTextNode((currentselected.info.radius * 1000).toFixed(1) + " км"));
+	radiusinfo.appendChild(document.createTextNode((globals.currentselected.info.radius * 1000).toFixed(1) + " км"));
 
 	radiusrow.appendChild(radiusproperty);
 	radiusrow.appendChild(radiusinfo);
@@ -272,20 +279,11 @@ function ChangeTableInfo(){
 	const desccell = document.createElement("td");
 	desccell.colSpan = "2";
 
-	const desc = document.createTextNode(currentselected.info.description);
+	const desc = document.createTextNode(globals.currentselected.info.description);
 
 	desccell.appendChild(desc);
 	descrow.appendChild(desccell);
 	tbl.appendChild(descrow);
-}
-
-function SelectObject(object){
-	if (object != currentselected){
-        currentselected = object;
-		ChangePrvwScene();
-		ChangeCameraTarget();
-		ChangeTableInfo();
-    }
 }
 
 function ChangeCameraTarget(){
@@ -299,12 +297,12 @@ function ChangeCameraTarget(){
 	}
 
 	const endposition = {
-		x: currentselected.mesh.position.x,
-		y: currentselected.mesh.position.y + 10,
-		z: currentselected.mesh.position.z + 10,
-		lax: currentselected.mesh.position.x,
-		lay: currentselected.mesh.position.y,
-		laz: currentselected.mesh.position.z,
+		x: globals.currentselected.mesh.position.x,
+		y: globals.currentselected.mesh.position.y + 10,
+		z: globals.currentselected.mesh.position.z + 10,
+		lax: globals.currentselected.mesh.position.x,
+		lay: globals.currentselected.mesh.position.y,
+		laz: globals.currentselected.mesh.position.z,
 	}
 
 
@@ -315,7 +313,7 @@ function ChangeCameraTarget(){
 		camera.lookAt(position.lax, position.lay, position.laz)})
 	.easing(TWEEN.Easing.Quartic.Out)
 	.onComplete(function() {
-		controls.target.copy(currentselected.mesh.position);
+		controls.target.copy(globals.currentselected.mesh.position);
 		controls.update()
 		});
 	tweenposition.start();
@@ -323,34 +321,40 @@ function ChangeCameraTarget(){
 
 const prevposition = new THREE.Vector3();
 function ChangeCameraPosition(){
-	if (currentselected != null){
+	if (globals.currentselected != null){
 		const deltaposition = new THREE.Vector3();
-		deltaposition.copy(currentselected.mesh.position);
+		deltaposition.copy(globals.currentselected.mesh.position);
 		deltaposition.sub(prevposition);
 
 		camera.position.set(deltaposition.x + camera.position.x, deltaposition.y + camera.position.y, deltaposition.z + camera.position.z);
-		controls.target.copy(currentselected.mesh.position);
+		controls.target.copy(globals.currentselected.mesh.position);
 		controls.update();
 
-		prevposition.copy(currentselected.mesh.position);
+		prevposition.copy(globals.currentselected.mesh.position);
 	}
 }
 
-canvas.onclick = function(){
-	if (currentover){
-		SelectObject(currentover)
-	}
+export function SelectObject(object){
+	if (object != globals.currentselected){
+        globals.currentselected = object;
+		ChangePrvwScene();
+		ChangeCameraTarget();
+		ChangeTableInfo();
+    }
 }
 
-window.onmousemove = function(e){
-	if (overcanvas){
+let mousepos = new THREE.Vector2();
+let raycaster = new THREE.Raycaster();
+let intersects;
+export function HandleMousePosition(e){
+	if (globals.overcanvas){
 		mousepos.x = (e.clientX / window.innerWidth) * 2 - 1;
 		mousepos.y = -(e.clientY / window.innerHeight) * 2 + 1;
 		raycaster.setFromCamera(mousepos, camera);
 		intersects = raycaster.intersectObjects(scene.children);
 		if (intersects.length == 1){
 			ghostpos.copy(intersects[0].point)
-			currentover = null;
+			globals.currentover = null;
 		}else{
 			intersects.forEach(function(intersect){
 				if (intersect.object.name === "plane"){
@@ -358,7 +362,7 @@ window.onmousemove = function(e){
 				}else{
 					planets.forEach(function(planet){
 						if(intersect.object.name === planet.mesh.name){
-							currentover = planet;
+							globals.currentover = planet;
 						}
 					})
 				}
@@ -368,16 +372,13 @@ window.onmousemove = function(e){
 	}
 };
 
-canvas.onmouseup = function(){
-	if (currentpressed){
-		scene.remove(currentghostmesh);
-		currentghostmesh = null
-		new Planet(currentpressed, ghostpos);
-	}
-    currentpressed = null;
-};
+export function AddObject(){
+	scene.remove(currentghostmesh);
+	currentghostmesh = null
+	new Planet(globals.currentpressed, ghostpos);
+}
 
-window.onresize = function(){
+export function HandleResize(){
 	let width = window.innerWidth;
 	let height = window.innerHeight;
 	renderer.setSize(width, height);
@@ -388,7 +389,7 @@ window.onresize = function(){
 	prvwrenderer.setSize(ratio, ratio);
 	prvwcamera.aspect = ratio / ratio;
 	prvwcamera.updateProjectionMatrix();
-};
+}
 
 function Animate(t) {
 	requestAnimationFrame( Animate );

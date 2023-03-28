@@ -19,3 +19,5 @@ let mooninfo = {
 const planetinfo = new Map();
 planetinfo.set("Earth", earthinfo);
 planetinfo.set("Moon", mooninfo)
+
+export {planetinfo}
