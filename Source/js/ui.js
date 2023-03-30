@@ -6,8 +6,9 @@ const globals = {
     currentover: null,
     currentselected: null,
 }
-
 const canvas =  document.getElementById('canvas');
+const tutor = document.getElementById("tutor-popup");
+const overlay = document.getElementById("overlay-popup")
 
 const planetimages = document.querySelectorAll(".planet");
 planetimages.forEach(function(element) {
@@ -33,6 +34,11 @@ document.getElementById("right-sidebar-button").onclick = function(){
     closedright = !closedright;
 }
 
+document.getElementById("popup-button").onclick = function(){
+    tutor.style.display = "none";
+    overlay.style.display = "none"
+}
+
 document.getElementById("earth").onmousedown = function(){
     globals.currentpressed = "Earth";
 };
@@ -55,16 +61,26 @@ canvas.onclick = function(){
 		SelectObject(globals.currentover)
 	}
 }
-
 canvas.onmouseup = function(){
-	if (globals.currentpressed){
+    if (globals.currentpressed){
         AddObject()
-	}
-    globals.currentpressed = null;
+	};
 };
 
-window.onresize = () => HandleResize()
+window.onresize = () => HandleResize();
+window.onmousemove = (e) => HandleMousePosition(e);
 
-window.onmousemove = (e) => HandleMousePosition(e)
+function ShowPopupTutor(){
+    tutor.style.display = "flex";
+    overlay.style.display = "flex"
+}
+
+window.onload = function(){
+    if (!localStorage.getItem("tutor_shown")){
+        ShowPopupTutor();
+        // localStorage.setItem("tutor_shown", true);
+    }
+    
+}
 
 export { globals }

@@ -1,13 +1,13 @@
 1. onload func with all essential variables
-2. orginise the code within .js files
 3. create object database
 4. add top panel with entries and information
 5. detalised trails
 6. planets react to mouse hover
-7. smooth camera movement
 8. shaders
 9. user data collection(?)
 10. realistic space/stars
 11. launch a server
 12. more sandbox tools
 13. introduction/guide window
+15. hover info
+16. fullscreen mode

@@ -7,14 +7,22 @@
         <link rel="stylesheet" href="./styles/style.css">
         <title>Project</title>
     </head>
-    <body id="body"> 
-        <canvas id="canvas"></canvas>
-        <div id="main">
-            <div id="top-panel" class="menu">
-                <a class="top-span" href="https://www.youtube.com">About</a>
-                <span class="top-span">Explore</span>
-                <span class="top-span">Devlog</span>
+    <body id="body">
+        <div id="overlay-popup">
+            <div id="tutor-popup" class="menu">
+                <button id="popup-button" class="button close-button">×</button>
+                <div id="tutor-content">
+                    <span id="tutor-info"></span>
+                </div>
             </div>
+        </div>
+        <div id="top-panel" class="menu">
+            <a class="top-span">Обучение</a>
+            <a class="top-span">Исследовать</a>
+            <a class="top-span" href="https://t.me/spacesimalpha" target=”_blank”>Лог Обновлений</a>
+        </div>
+        <div id="main">
+            <canvas id="canvas"></canvas>
             <div id="left-menu">
                 <div id="left-sidebar" class="menu">
                     <div id="objects-title" class="text">Меню объектов</div>
@@ -23,14 +31,14 @@
                         <img src="./images/moon.png" alt="moon" id="moon" class="planet" draggable="true">
                     </div>
                 </div>
-                <button id="left-sidebar-button" class="menu"">☰</button>
+                <button id="left-sidebar-button" class="button sidebar-button">☰</button>
             </div>
             <div id="right-menu">
                 <div id="right-sidebar" class="menu">
                     <canvas id="prvwcanvas"></canvas>
                     <table id="description" class="menu text"></table>
                 </div>
-                <button id="right-sidebar-button" class="menu">☰</button>
+                <button id="right-sidebar-button" class="button sidebar-button">☰</button>
             </div>
         </div>
         <script src="./js/objectinfo.js" type="module"></script>

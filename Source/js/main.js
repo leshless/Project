@@ -81,18 +81,19 @@ const points = new THREE.Points( stargeometry, starmaterial );
 scene.add( points );
 
 const plane = new THREE.Mesh(
-	new THREE.PlaneGeometry(1000, 1000),
+	new THREE.PlaneGeometry(1000, 1000, 100, 100),
 	new THREE.MeshBasicMaterial({ 
 		side: THREE.DoubleSide, 
 		transparent: true, 
-		opacity: 0,
+		opacity: 0.5,
+		color: 0x666666,
+		wireframe: true,
 		depthWrite: false,
 	})
 )
 plane.name = "plane";
 scene.add(plane);
 plane.rotation.x += Math.PI / 2
-//onload
 
 
 
@@ -201,8 +202,11 @@ function HandleGhost(){
 		if (currentghostmesh == null){currentghostmesh = GetMesh(globals.currentpressed, true)}
 		scene.add(currentghostmesh);
 		currentghostmesh.position.copy(ghostpos);
+		plane.material.opacity = 0.2
 	} else{
-		scene.remove(currentghostmesh)
+		scene.remove(currentghostmesh);
+		currentghostmesh = null;
+		plane.material.opacity = 0
 	}
 }
 
@@ -349,7 +353,7 @@ let intersects;
 export function HandleMousePosition(e){
 	if (globals.overcanvas){
 		mousepos.x = (e.clientX / window.innerWidth) * 2 - 1;
-		mousepos.y = -(e.clientY / window.innerHeight) * 2 + 1;
+		mousepos.y = -((e.clientY -	65) / window.innerHeight) * 2 + 1;
 		raycaster.setFromCamera(mousepos, camera);
 		intersects = raycaster.intersectObjects(scene.children);
 		if (intersects.length == 1){

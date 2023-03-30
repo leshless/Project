@@ -20,14 +20,16 @@ a:visited {
 
 body {
     margin: 0;
+    padding: 0;
     overflow: hidden;
     height: 100vh;
     width: 100vw;
 }
 
 canvas {
-    position: absolute;
+    position: relative;
     z-index: 0;
+    width: 100%;
 }
 
 .menu{
@@ -38,6 +40,29 @@ canvas {
     z-index: 1;
 }
 
+.button{
+    background-color: #2B303080;
+    caret-color: transparent;
+    border: none;
+    overflow: hidden;
+    z-index: 1;
+    font-weight: bold;  
+    font-size: 17px;
+    transition: 0.1s ease-in;
+    color: #B8B8B8;
+}
+
+.button:hover{
+    background-color: #2a2a2d;
+    cursor: pointer;
+}
+
+.close-button{
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+}
+
 #main{
     position: absolute;
     overflow: hidden;
@@ -46,6 +71,25 @@ canvas {
     width: 100%;
     flex-flow: wrap row;
     justify-content: space-between;
+}
+
+#tutor-popup{
+    display: none;
+    z-index: 10;
+    padding: 20px;
+    width: 500px;
+    height: 700px;
+}
+
+#overlay-popup{
+    display: none;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: 9;
+    background-color: #00000060;
+    justify-items: center;
+    align-items: center;
 }
 
 #left-menu{
@@ -64,53 +108,40 @@ canvas {
 }
 
 #top-panel{
+    position: relative;
+    z-index: 3; 
     width: 100%;
-    height: 55px;
+    height: 65px;
     display: flex;
-    gap: 10px;
+    padding-inline-start: 49px;
     justify-content: start;
     align-items: center;
+    background-color: #222222;
+    color: #eeeeee;
+    box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.15);
 }
 
 .top-span{
     color: #B8B8B8;
     align-self: center;
+    padding-left: 20px;
+    padding-right: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 10%;
     font-weight: bold;
     font-family: "Source Sans Pro", sans-serif;
+    transition: background-color 0.2s ease;
 }
 
-#left-sidebar-button{
-    align-self: center;
-    height: 12%;
-    width: 12%;
-    font-weight: bold;  
-    font-size: 17px;
-    transition: 0.3s;
-    color: #B8B8B8;
-}
-
-#left-sidebar-button:hover{
-    color: #2B3030 ;
-    background-color: #B8B8B8;
+.top-span:hover{
+    background-color: #2a2a2d;
 }
 
 #left-sidebar {
     width: 88%;
-}
-
-#right-sidebar-button{
-    align-self: center;
-    height: 12%;
-    width: 12%;
-    font-weight: bold;  
-    font-size: 17px;
-    transition: 0.3s;
-    color: #B8B8B8;
-}
-
-#right-sidebar-button:hover{
-    color: #2B3030 ;
-    background-color: #B8B8B8;
 }
 
 #right-sidebar {
@@ -118,6 +149,12 @@ canvas {
     display: flex;
     flex-wrap: wrap;
     align-content: start;
+}
+
+.sidebar-button{
+    align-self: center;
+    height: 12%;
+    width: 12%;
 }
 
 #objects-menu{
@@ -139,7 +176,7 @@ canvas {
 }
 
 .planet:hover{
-    background-color: #B8B8B8;
+    background-color: #2a2a2d;
 }
 .text{
     font-size: 15px;
